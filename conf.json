@@ -1,0 +1,42 @@
+{
+  "n1": {
+    "ip": "localhost",
+    "port": 1111,
+    "master": false,
+    "slaves": null
+  },
+  "n2": {
+    "ip": "localhost",
+    "port": 1112,
+    "master": true,
+    "slaves": [
+      "n1", "n3", "n4"
+    ]
+  },
+  "n3": {
+    "ip": "localhost",
+    "port": 1113,
+    "master": false,
+    "slaves": null
+  },
+  "n4": {
+    "ip": "localhost",
+    "port": 1114,
+    "master": true,
+    "slaves": [
+      "n2", "n5", "n6"
+    ]
+  },
+  "n5": {
+    "ip": "localhost",
+    "port": 1115,
+    "master": false,
+    "slaves": null
+  },
+  "n6": {
+    "ip": "localhost",
+    "port": 1116,
+    "master": false,
+    "slaves": null
+  }
+}
