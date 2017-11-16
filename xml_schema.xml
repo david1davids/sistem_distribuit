@@ -1,11 +1,11 @@
 <element name="items" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <zeroOrMore>
     <element name="item">
-      <element name="name">
-        <data type="string"/>
-      </element>
       <element name="age">
         <data type="int"/>
+      </element>
+      <element name="name">
+        <data type="string"/>
       </element>
     </element>
   </zeroOrMore>

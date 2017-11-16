@@ -9,11 +9,12 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 class Client:
-    def __init__(self, sort, filt, proxy_p = 1110, proxy_ip = 'localhost'):
+    def __init__(self, sort, filt, xml, proxy_p = 1110, proxy_ip = 'localhost'):
         self.proxy_p = proxy_p
         self.proxy_ip = proxy_ip
         self.sort = sort
         self.filt = filt
+        self.xml = xml
 
     def start(self):
         LOGGER.debug('Starting client')
@@ -23,27 +24,27 @@ class Client:
             'type': 'command',
             'command': 'get',
             'sort': self.sort,
-            'filter': self.filt
+            'filter': self.filt,
+            'xml': self.xml
         }).encode('utf-8')
         connection.send(payload)
         data_r = json.loads(connection.recv(1024).decode('utf-8')).get('payload')
-        print('Recived: ', data_r)
         return data_r
 
 
 if __name__ == "__main__":
-    xml_bool = False
+    xml = True
     filter_field = "age"
     filter_op = "__ge__"
     filter_val = 30
-    client = Client(sort=False, filt={
+    client = Client(sort=True, filt={
         'field': filter_field,
         'op': filter_op,
         'val': filter_val
-        })
+        }, xml=xml)
 
     data = client.start()
-    if xml_bool:
+    if xml:
         dom = parseString(data)
         print(dom.toprettyxml())
         with open("data.xml", "wb") as f:

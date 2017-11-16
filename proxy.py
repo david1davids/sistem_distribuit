@@ -19,23 +19,29 @@ class Proxy:
         data = []
         message = json.loads((yield from reader.read(1024)).decode('utf-8'))
         sort = message.get('sort')
-        filt = message.get('filt')
+        filt = message.get('filter')
+        print(filt)
         for node in self.config:
             master = self.config[node]['master']
             try:
                 if master:
                     port = self.config[node]["port"]
-                    LOGGER.info('Connecting to %s', node)
+                    LOGGER.info('Connecting to %s on port %s', node, port)
                     node_r, node_w = yield from asyncio.open_connection('localhost', port, loop=self.loop)
+                    LOGGER.info('Payload')
                     payload = json.dumps({
-                        type: 'command',
+                        'type': 'command',
                         'command': 'get',
-                        'filter': 'filt'
+                        'filter': filt
                     }).encode('utf-8')
+                    LOGGER.info('Sending payload...')
                     node_w.write(payload)
                     node_response = json.loads((yield from node_r.read(1024)).decode('utf-8')).get('payload')
+                    print(node_response)
                     LOGGER.info('Recived data from node.')
                     data += node_response
+                    if sort:
+                        data = self.sort(data)
             except Exception:
                 LOGGER.debug('Error, cannot get data from nodes ! %s', Exception)
                 pass

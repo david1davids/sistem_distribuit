@@ -22,21 +22,21 @@ class Node:
     @asyncio.coroutine
     def responde(self, reader, writer):
         message = json.loads((yield from reader.read(1024)).decode('utf-8'))
-        filt = message.get('filter')
+        filtr = message.get('filter')
         if self.master:
-            nr = len(self.slaves)
-            n=1
             data = []
-            if filt:
-                data += self.filter(self, filt)
+            nr, n = len(self.slaves), 1
+            data = []
+            if filtr:
+                data += self.filter(self, filtr)
             else:
                 data = self.data
             for slave in self.slaves:
-                n = n+1
+                n = n + 1
                 payload = json.dumps({
                     'type': 'command',
                     'command': 'get',
-                    'filter': filt
+                    'filter': filtr
                 }).encode('utf-8')
                 LOGGER.info('Creating connection...')
                 node_r, node_w = yield from asyncio.open_connection('localhost', slave, loop=self.loop)
@@ -44,7 +44,7 @@ class Node:
                 node_w.write(payload)
                 node_resp = yield from node_r.read(1024)
                 data += json.loads(node_resp.decode()).get('payload')
-                print("Recived: ", data)
+                print(data)
                 if n == nr:
                     break
             payload = json.dumps({
@@ -54,7 +54,7 @@ class Node:
             writer.write(payload)
             yield from writer.drain()
         else:
-            data = self.filter(self=self, filt=filt)
+            data = self.filter(self=self, filtr=filtr)
             payload = json.dumps({
                 'type': 'response',
                 'payload' : data,
@@ -78,10 +78,10 @@ class Node:
         self.loop.close()
 
     @staticmethod
-    def filter(self, filt):
-        field = filt['field']
-        op = filt['op']
-        val =filt['val']
+    def filter(self, filtr):
+        field = filtr['field']
+        op = filtr['op']
+        val =filtr['val']
         filtered = []
         for dat in self.data:
             operate = getattr(dat[field], op)
