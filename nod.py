@@ -1,6 +1,13 @@
 import asyncio
 import json
 import multiprocessing
+import logging
+
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+data = {
+
+}
 
 class Node:
     def __init__(self, port, mast, slaves, ip='localhost',):
@@ -25,6 +32,7 @@ class Node:
                 node_r, node_w = yield from asyncio.open_connection('localhost', slave, loop=self.loop)
                 node_w.write(payload)
                 node_resp = yield from node_r.read(1024)
+                LOGGER.info('Recived response: ', node_resp)
                 data += json.loads(node_resp.decode().get('payload'))
             payload = json.dumps({
                 'type': 'response',
@@ -38,6 +46,8 @@ class Node:
                 'type': 'response',
                 'payload' : data,
             }).encode('utf-8')
+            LOGGER.info('Sending data...')
+            writer.write(payload)
             yield from writer.drain()
 
 
@@ -45,10 +55,10 @@ class Node:
         serv = asyncio.start_server(self.responde, self.ip, self.port, loop=self.loop)
         proxy = self.loop.run_until_complete(serv)
         try:
-            print("Started node", self.port)
+            LOGGER.info('Node started on port: %s', self.port)
             self.loop.run_forever()
         except Exception:
-            print("proxy", Exception)
+            LOGGER.info('Node error ! %s', Exception)
             pass
         proxy.close()
         self.loop.run_until_complete(proxy.wait_closed())
@@ -68,9 +78,21 @@ class Node:
 
 
 def start_node(master, port, slaves):
-    node =Node(mast=master, slaves=slaves, port=port)
+    node =Node(mast=master, port=port, slaves=slaves)
     node.start()
 
 
 if __name__ == "__main__":
-    node1 = multiprocessing(target=start_node, args=(True, 1111, [1112,1113]))
+    node1 = multiprocessing.Process(target=start_node, args=(False, 1111, []))
+    node2 = multiprocessing.Process(target=start_node, args=(True, 1112, [1111, 1113, 1114]))
+    node3 = multiprocessing.Process(target=start_node, args=(False, 1113, []))
+    node4 = multiprocessing.Process(target=start_node, args=(True, 1114, [1112, 1115, 1116]))
+    node5 = multiprocessing.Process(target=start_node, args=(False, 1115, []))
+    node6 = multiprocessing.Process(target=start_node, args=(False, 1116, []))
+
+    node1.start()
+    node2.start()
+    node3.start()
+    node4.start()
+    node5.start()
+    node6.start()
