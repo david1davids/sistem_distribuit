@@ -26,7 +26,7 @@ class Client:
             'filter': self.filt
         }).encode('utf-8')
         connection.send(payload)
-        data_r = json.loads(connection.recv(1024))
+        data_r = json.loads(connection.recv(1024).decode('utf-8')).get('payload')
         print('Recived: ', data_r)
         return data_r
 
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     xml_bool = False
     filter_field = "age"
     filter_op = "__ge__"
-    filter_val = 71
-    client = Client(sort=True, filt={
+    filter_val = 30
+    client = Client(sort=False, filt={
         'field': filter_field,
         'op': filter_op,
         'val': filter_val
