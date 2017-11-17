@@ -6,9 +6,6 @@ import node_data
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-data = {
-
-}
 
 class Node:
     def __init__(self, port, mast, slaves, data, ip='localhost'):
@@ -40,7 +37,6 @@ class Node:
                 }).encode('utf-8')
                 LOGGER.info('Creating connection...')
                 node_r, node_w = yield from asyncio.open_connection('localhost', slave, loop=self.loop)
-                LOGGER.info('Sennding payload...')
                 node_w.write(payload)
                 node_resp = yield from node_r.read(1024)
                 data += json.loads(node_resp.decode()).get('payload')
@@ -52,6 +48,7 @@ class Node:
                 'payload': data,
             }).encode('utf-8')
             writer.write(payload)
+            LOGGER.info('Sending data to the proxy...')
             yield from writer.drain()
         else:
             data = self.filter(self=self, filtr=filtr)
@@ -59,7 +56,7 @@ class Node:
                 'type': 'response',
                 'payload' : data,
             }).encode('utf-8')
-            LOGGER.info('Sending data...')
+            LOGGER.info('Sending back to master the data...')
             writer.write(payload)
             yield from writer.drain()
 

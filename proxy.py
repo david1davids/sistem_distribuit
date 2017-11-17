@@ -46,20 +46,17 @@ class Proxy:
                 LOGGER.debug('Error, cannot get data from nodes ! %s', Exception)
                 pass
         if message.get('xml'):
-            xml = dicttoxml.dicttoxml(data, attr_type=False, custom_root="items").decode()
-            payload = json.dumps({
-                'type': 'response',
-                'payload': xml,
-            }).encode('utf-8')
-            writer.write(payload)
-            yield from writer.drain()
+            response = dicttoxml.dicttoxml(data, attr_type=False, custom_root="items").decode()
+
         else:
-            payload = json.dumps({
-                'type': 'response',
-                'payload': json.dumps(data),
-            }).encode("utf-8")
-            writer.write(payload)
-            yield from writer.drain()
+            response = json.dumps(data)
+
+        payload = json.dumps({
+            'type': 'response',
+            'payload': response,
+        }).encode('utf-8')
+        writer.write(payload)
+        yield from writer.drain()
 
     def start(self):
         LOGGER.info('Proxy starting on port: %s', self.port)
@@ -77,7 +74,7 @@ class Proxy:
 
     @staticmethod
     def sort(self, data):
-        return sorted(data)
+        return sorted(data, key="age")
 
 
 if __name__ == "__main__":
